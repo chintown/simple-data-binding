@@ -1,0 +1,34 @@
+<!doctype html>
+<html>
+    <head>
+        <title></title>
+        <link rel="stylesheet" href="styles/base.css" />
+        <link rel="stylesheet" href="styles/boilerplate.css" />
+        <link rel="stylesheet" href="bower_components/mocha/mocha.css" />
+    </head>
+    <body>
+        <div id="container">
+          <div id="app"></div>
+          <hr>
+          <div id="mocha"></div>
+        </div>
+        <div id="resources_app">
+          <script src="bower_components/jquery/dist/jquery.min.js"></script>
+          <script src="scripts/base.js"></script>
+          <script src="scripts/boilerplate.js"></script>
+        </div>
+        <div id="resources_mocha">
+          <script src="bower_components/mocha/mocha.js"></script>
+          <script src="bower_components/chai/chai.js"></script>
+          <script>
+              mocha.ui('bdd');
+              mocha.reporter('html');
+              var expect = chai.expect;
+          </script>
+          <script src="test/boilerplate.js"></script>
+          <script>
+              mocha.run();
+          </script>
+        </div>
+    </body>
+</html>
