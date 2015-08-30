@@ -171,13 +171,13 @@ describe('base.js', function() {
             </div>\
           '
         });
-        var sampleModel = new SampleModel();
-        sampleModel.render();
+        var model = new SampleModel();
+        model.render();
         $('.user-input').val('123').trigger('change');
-        expect(sampleModel.get('len')).to.equal(3);
+        expect(model.get('len')).to.equal(3);
         $('.user-input').val('1234').trigger('change');
-        expect(sampleModel.get('len')).to.equal(4);
-        sampleModel.m$dom.remove();
+        expect(model.get('len')).to.equal(4);
+        model.m$dom.remove();
       });
       it('should avoid looping', function() {
         var SampleModel = Model.extend({
@@ -193,11 +193,11 @@ describe('base.js', function() {
             <div class="module"> </div>\
           '
         });
-        var sampleModel = new SampleModel();
-        var spy = sinon.spy(sampleModel, 'initStateDeps');
-        sampleModel.render();
+        var model = new SampleModel();
+        var spy = sinon.spy(model, 'initStateDeps');
+        model.render();
         expect(spy.returnValues[0]).to.be.false;
-        sampleModel.m$dom.remove();
+        model.m$dom.remove();
       });
     });
   });
