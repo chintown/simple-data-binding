@@ -39,7 +39,8 @@
   })();
 
   var Model = Class.extend({
-    'init': function() {
+    'init': function(controller) {
+      this.mController = controller || this; // logic might be held by delegator
       this.m$dom = null;
       this.m$domParent = null;
       this.mStates = {};
@@ -47,9 +48,16 @@
     'defaults': {},
     'template': '<p>implement me</p>',
     'render': function() {
-      if (!globals.Helper.isDefined(this.m$dom)) {
+      if (globals.Helper.isDefined(this.m$dom)) {
         return; // avoid duplicated rendering
       }
+      var $container = this.mController.m$domParent || $('body');
+      this.m$dom = $(this.template).appendTo($container); // bone
+      this.initDataBindings(); // spirit
+      // this.initStates(); // flesh
+    },
+    'initDataBindings': function() {
+
     }
   });
 

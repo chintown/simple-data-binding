@@ -21,4 +21,28 @@ describe('base.js', function() {
       expect(subClass instanceof Class).to.be.true;
     });
   });
+  describe('Model', function() {
+    it('by default model should be rendered in body', function() {
+      var SmapleModel = Model.extend({
+        'template': '<div class="sample-model">Sample Model</div>'
+      });
+      var model = new SmapleModel();
+      model.render();
+      expect($('.sample-model').size()).equal(1);
+      model.m$dom.remove();
+    });
+    it('model should be rendered once', function() {
+      var SmapleModel = Model.extend({
+        'template': '<div class="sample-model">Sample Model</div>'
+      });
+      var model = new SmapleModel();
+      var spy = sinon.spy(model, "initDataBindings");
+
+      model.render();
+      model.render();
+      expect($('.sample-model').size()).equal(1);
+      expect(spy.calledOnce).to.be.true;
+      model.m$dom.remove();
+    });
+  });
 });
