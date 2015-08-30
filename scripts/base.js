@@ -93,8 +93,28 @@
         console.error('initDataBindings: m$dom is not ready.');
         return;
       }
+      var self = this;
       $.each(this.parseBindings('data-bind'), function(idx, binding) {
+        var $elem = binding.$elem;
+        var state = binding.from;
+        var domPoint = binding.to;
 
+        // - on <model> + <state> change, trigger <dom> + <domPoint> updating
+        console.log('on `%s` change => update %o-%s', state, $elem, domPoint);
+        var viewUpdater = self.injectDomValue.bind(self, $elem, domPoint);
+        EventBus.subscribe(self.getModelStateId(state), viewUpdater);
+
+        // - on <dom> change, trigger controller's <state> updating
+        var stateUpdater = self.change.bind(self, state);
+        var domValExtractor = self.extractDomValue;
+        if (self.isBindOnContent($elem, domPoint)) {
+          var events = self.getContentChangeEvents($elem);
+          console.log('on %o-%s => update %s', $elem, events, state);
+          $elem.on(events, function(e) {
+            var value = domValExtractor($(e.target));
+            stateUpdater(value);
+          });
+        }
       });
     },
     'initStates': function(userInitPdo) {
@@ -155,6 +175,63 @@
         });
       });
       return bindings;
+    },
+    'injectDomValue': function($dom, domPoint, stateVal) {
+      // domPoint
+      // html, txt | val | class--classname | others(attr)
+      if (domPoint == 'html') {
+        $dom.html(stateVal);
+      } else if (domPoint == 'txt') {
+        $dom.text(stateVal);
+      } else if (domPoint == 'val') {
+        $dom.val(stateVal);
+      } else if (domPoint.indexOf('class--') === 0) {
+        if (typeof stateVal != 'boolean') {
+          console.warn('injectDomValue: only boolean state can be bound to class. state: %o', stateVal);
+          return;
+        }
+        var className = domPoint.substr('class--'.length);
+        if (stateVal) {
+          $dom.addClass(className);
+        } else {
+          $dom.removeClass(className);
+        }
+      } else {
+        if (typeof stateVal == 'boolean') {
+          if (stateVal) {
+            $dom.attr(domPoint, true);
+          } else {
+            $dom.removeAttr(domPoint);
+          }
+        } else {
+          $dom.attr(domPoint, stateVal);
+        }
+      }
+    },
+    'extractDomValue': function($dom) {
+      if ($dom.is('input[type="checkbox"]')) {
+        return $dom.is(':checked');
+      } else if ($dom.is('select') || $dom.is('input') || $dom.is('textarea')) {
+        return $dom.val();
+      } else {
+        return $dom.text();
+      }
+    },
+    'isBindOnContent': function($elem, domPoint) {
+      return ($elem.is('input[type="checkbox"]') && domPoint == 'checked') ||
+              ($elem.is('select') && domPoint == 'val') ||
+              ($elem.is('textarea') && domPoint == 'val') ||
+              ($elem.is('input:not([type])') && domPoint == 'val') ||
+              ($elem.is('input[type="text"]') && domPoint == 'val');
+    },
+    'getContentChangeEvents': function($elem) {
+      if ($elem.is('input[type="checkbox"]')) {
+        return 'click';
+      } else if ($elem.is('input')) {
+        return 'keyup change';
+      } else if ($elem.is('select') | $elem.is('textarea')) {
+        return 'change';
+      }
     }
   });
 

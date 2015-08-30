@@ -76,6 +76,70 @@ describe('base.js', function() {
           model.m$dom.remove();
         });
       });
+      it('should register state changes for updating dom', function() {
+        var SmapleModel = Model.extend({
+          'defaults': {
+            's1': '<script>console.log("XSS")</script>',
+            's2': '<script>alert(1)</script>',
+            's3': true,
+            's4': false,
+            's5': 'xxx',
+          },
+          'template': '\
+          <div class="model-1">\
+            <div class="elem-1" data-bind="s1=>html"></div>\
+            <div class="elem-2" data-bind="s2=>txt"></div>\
+            <input class="elem-3" data-bind="s5=>val">\
+            <div class="elem-4" data-bind="s3=>class--foo"></div>\
+            <div class="elem-5 foo" data-bind="s4=>class--foo"></div>\
+            <div class="elem-6" data-bind="s3=>hidden"></div>\
+            <div class="elem-7" data-bind="s4=>hidden" hidden></div>\
+            <div class="elem-8" data-bind="s5=>data-id"></div>\
+            <input type="checkbox" class="elem-9" data-bind="s3=>checked">\
+            <input type="checkbox" class="elem-10" data-bind="s4=>checked" checked>\
+          </div>'
+        });
+        var model = new SmapleModel();
+        model.render();
+        expect($('.elem-1').html()).to.equal('<script>console.log("XSS")</script>');
+        expect($('.elem-2').text()).to.equal('<script>alert(1)</script>');
+        expect($('.elem-3').val()).to.equal('xxx');
+        expect($('.elem-4').is('.foo')).to.be.true;
+        expect($('.elem-5').is('.foo')).to.be.false;
+        expect($('.elem-6').is('[hidden]')).to.be.true;
+        expect($('.elem-7').is('[hidden]')).to.be.false;
+        expect($('.elem-8').is('[data-id="xxx"]')).to.be.true;
+        expect($('.elem-9').is(':checked')).to.be.true;
+        expect($('.elem-10').is(':checked')).to.be.false;
+
+        model.m$dom.remove();
+      });
+      it('should bind dom change to states', function() {
+        var SmapleModel = Model.extend({
+          'defaults': {
+            's1': '<script>console.log("XSS")</script>',
+            's2': '<script>alert(1)</script>',
+            's3': true,
+            's4': false,
+            's5': 'xxx',
+          },
+          'template': '\
+          <div class="model-1">\
+            <input class="elem-3" data-bind="s5=>val">\
+            <input type="checkbox" class="elem-9" data-bind="s4=>checked">\
+          </div>'
+        });
+        var model = new SmapleModel();
+        model.render();
+        $('.elem-3').val('yyy').trigger('change');
+        expect(model.mStates.s5).to.equal('yyy');
+        $('.elem-9').trigger('click');
+        expect($('.elem-9').is(':checked')).to.be.true;
+        $('.elem-9').trigger('click');
+        expect($('.elem-9').is(':checked')).to.be.false;
+
+        model.m$dom.remove();
+      });
     });
     describe('initStates', function() {
       it('should update the state by input. but ignore unrecognized ones', function() {
@@ -89,22 +153,6 @@ describe('base.js', function() {
         expect(model.mStates).to.not.have.ownProperty('foo');
         expect(model.mStates.txt).to.equal('hi there!');
         model.m$dom.remove();
-      });
-
-      it('model should ignore unrecognized initial state', function() {
-        // var SmapleModel = Model.extend({
-        //   'template': '<div class="sample-model"\
-        //     data-bind="txt => html">\
-        //     </div>'
-        // });
-        // var model = new SmapleModel({
-        //   'defaults': {
-        //     'txt': 'default text'
-        //   }
-        // });
-        // model.render({'txt': 'hi there!', 'foo': 'unexpected state'});
-        //
-        // model.m$dom.remove();
       });
     });
   });
