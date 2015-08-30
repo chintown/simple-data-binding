@@ -66,7 +66,7 @@
       this.mController = controller || this; // logic might be held by delegator
       this.m$dom = null;
       this.m$domParent = null;
-      this.mStates = {};
+      this.mStates = $.extend({}, this.defaults);
     },
     'defaults': {},
     'template': '<p>implement me</p>',
