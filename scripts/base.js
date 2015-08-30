@@ -118,9 +118,10 @@
       });
     },
     'initStates': function(userInitPdo) {
+      this.initStateDeps();
       for (var k in this.mStates) {
         var v = Helper.isDefined(userInitPdo, k) ?
-                userInitPdo[k] : this.get(k)
+                userInitPdo[k] : this.get(k); // XXX
         console.log('initStates: %s=`%s` %s', k, v,
                     (Helper.isDefined(userInitPdo, k) ? '' : '(default)'));
         this.change(k, v);
@@ -140,16 +141,13 @@
       this.set(state, value);
       EventBus.publish(this.getModelStateId(state), value);
 
-      $.each(this.getStateDeps(), function(idx, stateDep) {
-        console.group('-> change: %s=`%s`', stateDep, value);
+      $.each(this.getStateDeps(state), function(idx, stateDep) {
         var value = self.get(stateDep);
+        console.group('-> change: %s=`%s`', stateDep, value);
         EventBus.publish(self.getModelStateId(stateDep), value);
         console.groupEnd();
       });
       console.groupEnd();
-    },
-    'getStateDeps': function(state) {
-      return []; // TODO
     },
     'get': function(state) {
       if (!Helper.isDefined(this.mStates, state)) {
@@ -257,6 +255,52 @@
         return 'keyup change';
       } else if ($elem.is('select') | $elem.is('textarea')) {
         return 'change';
+      }
+    },
+    'ptnGetter': /\.get\(['"]([a-zA-Z]+)['"]\)/gm,
+    'getGetterDeps': function(fn) {
+      var matches = this.ptnGetter.exec(fn);
+      this.ptnGetter.lastIndex = 0; // XXX
+      if (!matches) {
+        return [];
+      } else {
+        matches.shift();
+        return matches;
+      }
+    },
+    'stateDepMap': {},
+    'initStateDeps': function() {
+      // a        a: [b, c]
+      // b get a  c: [b]
+      //   get c  b: [c]
+      // c get a
+      //   get b <= cause loop
+      var self = this;
+      var stateDepMap = this.stateDepMap;
+      $.each(this.mStates, function(consumer, valOrFn) {
+        if (typeof valOrFn !== 'function') {
+          return;
+        }
+        $.each(self.getGetterDeps(valOrFn), function(idx, provider) {
+          if (!Helper.isDefined(stateDepMap, provider)) {
+            stateDepMap[provider] = [];
+          }
+
+          if (Helper.isDefined(stateDepMap, consumer) &&
+              stateDepMap[consumer].indexOf(provider) !== -1) {
+            alert('initStateDeps: loop detected: ' + consumer + ' <=> '+provider)
+          }
+
+          stateDepMap[provider].push(consumer);
+        });
+      });
+      this.stateDepMap = stateDepMap;
+    },
+    'getStateDeps': function(state) {
+      if (!Helper.isDefined(this.stateDepMap, state)) {
+        return [];
+      } else {
+        return this.stateDepMap[state];
       }
     }
   });

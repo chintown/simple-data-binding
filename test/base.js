@@ -155,5 +155,48 @@ describe('base.js', function() {
         model.m$dom.remove();
       });
     });
+    describe('statesDeps', function() {
+      it('should reflect consumer state if provider state changed', function() {
+        var SampleModel = Model.extend({
+          'defaults': {
+            'msg': '',
+            'len': function() {
+              return this.get('msg').length;
+            }
+          },
+          'template': '\
+            <div class="module">\
+              message: <input class="user-input" data-bind="msg=>val">\
+              message length:<span class="message" data-bind="len=>txt"></span>\
+            </div>\
+          '
+        });
+        var sampleModel = new SampleModel();
+        sampleModel.render();
+        $('.user-input').val('123').trigger('change');
+        expect(sampleModel.get('len')).to.equal(3);
+        $('.user-input').val('1234').trigger('change');
+        expect(sampleModel.get('len')).to.equal(4);
+        sampleModel.m$dom.remove();
+      });
+      it('should avoid looping', function() {
+        var SampleModel = Model.extend({
+          'defaults': {
+            'b': function() {
+              return this.get('c');
+            },
+            'c': function() {
+              return this.get('b');
+            }
+          },
+          'template': '\
+            <div class="module"> </div>\
+          '
+        });
+        var sampleModel = new SampleModel();
+        sampleModel.render();
+        sampleModel.m$dom.remove();
+      });
+    });
   });
 });
