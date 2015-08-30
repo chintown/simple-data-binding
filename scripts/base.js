@@ -107,7 +107,7 @@
         // - on <dom> change, trigger controller's <state> updating
         var stateUpdater = self.change.bind(self, state);
         var domValExtractor = self.extractDomValue;
-        if (self.isBindOnContent($elem, domPoint)) {
+        if (self.isChangeOnContent($elem, domPoint)) {
           var events = self.getContentChangeEvents($elem);
           console.log('on %o-%s => update %s', $elem, events, state);
           $elem.on(events, function(e) {
@@ -217,7 +217,7 @@
         return $dom.text();
       }
     },
-    'isBindOnContent': function($elem, domPoint) {
+    'isChangeOnContent': function($elem, domPoint) {
       return ($elem.is('input[type="checkbox"]') && domPoint == 'checked') ||
               ($elem.is('select') && domPoint == 'val') ||
               ($elem.is('textarea') && domPoint == 'val') ||
