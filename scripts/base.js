@@ -118,7 +118,11 @@
       });
     },
     'initStates': function(userInitPdo) {
-      this.initStateDeps();
+      if (!this.initStateDeps()) {
+        console.error('render: states have loop dependencies. ABORT');
+        return;
+      }
+
       for (var k in this.mStates) {
         var v = Helper.isDefined(userInitPdo, k) ?
                 userInitPdo[k] : this.get(k); // XXX
@@ -276,6 +280,7 @@
       //   get c  b: [c]
       // c get a
       //   get b <= cause loop
+      var isValidWithoutLoop = true;
       var self = this;
       var stateDepMap = this.stateDepMap;
       $.each(this.mStates, function(consumer, valOrFn) {
@@ -289,13 +294,16 @@
 
           if (Helper.isDefined(stateDepMap, consumer) &&
               stateDepMap[consumer].indexOf(provider) !== -1) {
-            alert('initStateDeps: loop detected: ' + consumer + ' <=> '+provider)
+            isValidWithoutLoop = false;
+            console.error('initStateDeps: loop detected: %s <=> %s',
+                          consumer, provider);
           }
 
           stateDepMap[provider].push(consumer);
         });
       });
       this.stateDepMap = stateDepMap;
+      return isValidWithoutLoop;
     },
     'getStateDeps': function(state) {
       if (!Helper.isDefined(this.stateDepMap, state)) {

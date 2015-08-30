@@ -194,7 +194,9 @@ describe('base.js', function() {
           '
         });
         var sampleModel = new SampleModel();
+        var spy = sinon.spy(sampleModel, 'initStateDeps');
         sampleModel.render();
+        expect(spy.returnValues[0]).to.be.false;
         sampleModel.m$dom.remove();
       });
     });
