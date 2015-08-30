@@ -116,14 +116,12 @@
       console.group('change: %s=`%s`', state, value);
       this.mStates[state] = value;
 
-      var identifier = this.mId + '-' + this.state;
-      EventBus.publish(identifier, value);
+      EventBus.publish(this.getModelStateId(state), value);
 
       $.each(this.getStateDeps(), function(idx, stateDep) {
-        var identifier = self.mId + '-' + stateDep;
-        var value = self.get(stateDep);
         console.group('-> change: %s=`%s`', stateDep, value);
-        EventBus.publish(identifier, value);
+        var value = self.get(stateDep);
+        EventBus.publish(self.getModelStateId(stateDep), value);
         console.groupEnd();
       });
       console.groupEnd();
@@ -132,6 +130,9 @@
       return []; // TODO
     },
     //--------------------------------------------------------------------------
+    'getModelStateId': function(state) {
+      return this.mId + '-' + state;
+    },
     'parseBindings': function(attr) {
       var elems = $.makeArray(this.m$dom.find('[' + attr + ']'));
       if (this.m$dom.is('[' + attr + ']')) {
