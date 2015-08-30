@@ -7,9 +7,11 @@
         var args = [].slice.call(arguments);
         var numArgs = args.length;
         if (numArgs == 1) {
-          return typeof arguments[0] !== 'undefined';
+          return typeof arguments[0] !== 'undefined' &&
+                  arguments[0] !== null;
         } else if (numArgs == 2 && typeof arguments[1] === 'string') {
-          return arguments[1] in arguments[0];
+          return Helper.isDefined(arguments[0]) &&
+                  arguments[1] in arguments[0];
         } else {
           console.error('isDefined: unsupported args: %o', args);
         }
