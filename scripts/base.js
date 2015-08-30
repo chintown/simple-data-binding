@@ -20,14 +20,14 @@
   })();
 
   var Class = (function() {
-    function Class() {
-      if (this.init) {
-        this.init.apply(this, arguments);
-      }
-    };
+    function Class() {};
     Class.extend = function(extendedProperties) {
-      var ChildClass = function() {};
-      ChildClass.prototype = Object.create(Class.prototype);
+      var ChildClass = function() { // XXX
+        if (this.init) {
+          this.init.apply(this, arguments);
+        }
+      };
+      ChildClass.prototype = Object.create(this.prototype); // XXX
       ChildClass.prototype.constructor = ChildClass;
       for (var k in extendedProperties) {
         ChildClass.prototype[k] = extendedProperties[k];
