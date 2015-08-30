@@ -43,12 +43,12 @@
   var Class = (function() {
     function Class() {};
     Class.extend = function(extendedProperties) {
-      var ChildClass = function() { // XXX
+      var ChildClass = function() {
         if (this.init) {
           this.init.apply(this, arguments);
         }
       };
-      ChildClass.prototype = Object.create(this.prototype); // XXX
+      ChildClass.prototype = Object.create(this.prototype);
       ChildClass.prototype.constructor = ChildClass;
       for (var k in extendedProperties) {
         ChildClass.prototype[k] = extendedProperties[k];
@@ -125,7 +125,7 @@
 
       for (var k in this.mStates) {
         var v = Helper.isDefined(userInitPdo, k) ?
-                userInitPdo[k] : this.get(k); // XXX
+                userInitPdo[k] : this.get(k);
         console.log('initStates: %s=`%s` %s', k, v,
                     (Helper.isDefined(userInitPdo, k) ? '' : '(default)'));
         this.change(k, v);
@@ -265,7 +265,7 @@
     'ptnGetter': /\.get\(['"]([a-zA-Z]+)['"]\)/gm,
     'getGetterDeps': function(fn) {
       var matches = this.ptnGetter.exec(fn);
-      this.ptnGetter.lastIndex = 0; // XXX
+      this.ptnGetter.lastIndex = 0;
       if (!matches) {
         return [];
       } else {
