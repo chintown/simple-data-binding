@@ -120,7 +120,7 @@
     'initStates': function(userInitPdo) {
       for (var k in this.mStates) {
         var v = Helper.isDefined(userInitPdo, k) ?
-                userInitPdo[k] : this.mStates[k];
+                userInitPdo[k] : this.get(k)
         console.log('initStates: %s=`%s` %s', k, v,
                     (Helper.isDefined(userInitPdo, k) ? '' : '(default)'));
         this.change(k, v);
@@ -130,12 +130,14 @@
       if (!Helper.isDefined(this.mStates, state)) {
         console.error('change: model does not have state: %s', state);
         return;
+      } else if (typeof value == 'function') {
+        console.error('change: can not state by function value. %s:=%s', state, value);
+        return;
       }
 
       var self = this;
       console.group('change: %s=`%s`', state, value);
-      this.mStates[state] = value;
-
+      this.set(state, value);
       EventBus.publish(this.getModelStateId(state), value);
 
       $.each(this.getStateDeps(), function(idx, stateDep) {
@@ -148,6 +150,30 @@
     },
     'getStateDeps': function(state) {
       return []; // TODO
+    },
+    'get': function(state) {
+      if (!Helper.isDefined(this.mStates, state)) {
+        console.error('get: model does not have state: %s', state);
+        return;
+      }
+
+      if (typeof this.mStates[state] == 'function') {
+        return this.mStates[state].apply(this);
+      } else {
+        return this.mStates[state];
+      }
+    },
+    'set': function(state, value) {
+      if (!Helper.isDefined(this.mStates, state)) {
+        console.error('get: model does not have state: %s', state);
+        return;
+      }
+
+      if (typeof this.mStates == 'function') {
+        // ignore
+      } else {
+        return this.mStates[state] = value;
+      }
     },
     //--------------------------------------------------------------------------
     'getModelStateId': function(state) {
