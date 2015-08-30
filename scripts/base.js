@@ -167,7 +167,7 @@
         return;
       }
 
-      if (typeof this.mStates == 'function') {
+      if (typeof this.mStates[state] == 'function') {
         // ignore
       } else {
         return this.mStates[state] = value;
@@ -203,6 +203,7 @@
     'injectDomValue': function($dom, domPoint, stateVal) {
       // domPoint
       // html, txt | val | class--classname | others(attr)
+      // TODO ignore if no change
       if (domPoint == 'html') {
         $dom.html(stateVal);
       } else if (domPoint == 'txt') {
