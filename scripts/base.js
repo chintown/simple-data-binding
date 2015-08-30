@@ -1,6 +1,6 @@
 (function(globals) {
   'use strict';
-  console.log('load base.js');
+  console.group('base.js');
   var Helper = (function() {
     return {
       'isDefined': function() {
@@ -14,6 +14,27 @@
                   arguments[1] in arguments[0];
         } else {
           console.error('isDefined: unsupported args: %o', args);
+        }
+      }
+    };
+  })();
+
+  var EventBus = (function() {
+    var bus = {};
+    return {
+      'subscribe': function(identifier, handler) {
+        if (!Helper.isDefined(bus, identifier)) {
+          bus[identifier] = [];
+        }
+        bus[identifier].push(handler);
+      },
+      'publish': function(identifier, message) {
+        if (!Helper.isDefined(bus, identifier)) {
+          console.error('subscribe: invalid identifier `%s`', identifier);
+          return;
+        }
+        for (var i = 0; i < bus[identifier].length; i++) {
+          bus[identifier][i](message);
         }
       }
     };
