@@ -70,17 +70,90 @@
     },
     'defaults': {},
     'template': '<p>implement me</p>',
-    'render': function() {
+    'render': function(userInitPdo) {
       if (globals.Helper.isDefined(this.m$dom)) {
         return; // avoid duplicated rendering
       }
-      var $container = this.mController.m$domParent || $('body');
-      this.m$dom = $(this.template).appendTo($container); // bone
+      this.initView(); // bone
       this.initDataBindings(); // spirit
-      // this.initStates(); // flesh
+      this.initStates(userInitPdo); // flesh
+    },
+    'initView': function() {
+      var $container = this.mController.m$domParent || $('body');
+      this.m$dom = $(this.template).appendTo($container);
     },
     'initDataBindings': function() {
+      // data-bind="<state> => <domPoint> (, ...)"
+      // - on <model> + <state> change, trigger <dom> + <domPoint> updating
+      // - on <dom> change, trigger controller's <state> updating
+      // event-bind="<event> => model<handler>"
+      // - on <dom> <event>, tirgger <handler>
 
+      if (!Helper.isDefined(this.m$dom)) {
+        console.error('initDataBindings: m$dom is not ready.');
+        return;
+      }
+      $.each(this.parseBindings('data-bind'), function(idx, binding) {
+
+      });
+    },
+    'initStates': function(userInitPdo) {
+      for (var k in this.mStates) {
+        var v = Helper.isDefined(userInitPdo, k) ?
+                userInitPdo[k] : this.mStates[k];
+        console.log('initStates: %s=`%s` %s', k, v,
+                    (Helper.isDefined(userInitPdo, k) ? '' : '(default)'));
+        this.change(k, v);
+      }
+    },
+    'change': function(state, value) {
+      if (!Helper.isDefined(this.mStates, state)) {
+        console.error('change: model does not have state: %s', state);
+        return;
+      }
+
+      var self = this;
+      console.group('change: %s=`%s`', state, value);
+      this.mStates[state] = value;
+
+      var identifier = this.mId + '-' + this.state;
+      EventBus.publish(identifier, value);
+
+      $.each(this.getStateDeps(), function(idx, stateDep) {
+        var identifier = self.mId + '-' + stateDep;
+        var value = self.get(stateDep);
+        console.group('-> change: %s=`%s`', stateDep, value);
+        EventBus.publish(identifier, value);
+        console.groupEnd();
+      });
+      console.groupEnd();
+    },
+    'getStateDeps': function(state) {
+      return []; // TODO
+    },
+    //--------------------------------------------------------------------------
+    'parseBindings': function(attr) {
+      var elems = $.makeArray(this.m$dom.find('[' + attr + ']'));
+      if (this.m$dom.is('[' + attr + ']')) {
+        elems.unshift(this.m$dom.get(0));
+      }
+      var bindings = [];
+      $.each(elems, function(idx, elem) {
+        var $elem = $(elem);
+        var bindingLine = $elem.attr(attr).trim();
+        var bindingPairs = bindingLine.split(',');
+        $.each(bindingPairs, function(idx, bindingPair) {
+          var parts = bindingPair.trim().split('=>');
+          if (parts.length == 2) {
+            bindings.push({
+              '$elem': $elem,
+              'from': parts[0].trim(),
+              'to': parts[1].trim()
+            });
+          }
+        });
+      });
+      return bindings;
     }
   });
 

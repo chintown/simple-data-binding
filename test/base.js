@@ -24,27 +24,88 @@ describe('base.js', function() {
     });
   });
   describe('Model', function() {
-    it('by default model should be rendered in body', function() {
-      var SmapleModel = Model.extend({
-        'template': '<div class="sample-model">Sample Model</div>'
-      });
-      var model = new SmapleModel();
-      model.render();
-      expect($('.sample-model').size()).equal(1);
-      model.m$dom.remove();
-    });
-    it('model should be rendered once', function() {
-      var SmapleModel = Model.extend({
-        'template': '<div class="sample-model">Sample Model</div>'
-      });
-      var model = new SmapleModel();
-      var spy = sinon.spy(model, "initDataBindings");
+    describe('initView', function() {
+      it('should render dom in body by default', function() {
+        var SmapleModel = Model.extend({
+          'template': '<div class="sample-model">Sample Model</div>'
+        });
+        var model = new SmapleModel();
+        model.render();
+        expect($('.sample-model').size()).equal(1);
 
-      model.render();
-      model.render();
-      expect($('.sample-model').size()).equal(1);
-      expect(spy.calledOnce).to.be.true;
-      model.m$dom.remove();
+        model.m$dom.remove();
+      });
+      it('should avoid duplicated rendering', function() {
+        var SmapleModel = Model.extend({
+          'template': '<div class="sample-model">Sample Model</div>'
+        });
+        var model = new SmapleModel();
+        var spy = sinon.spy(model, 'initView');
+
+        model.render();
+        model.render();
+        expect($('.sample-model').size()).equal(1);
+        expect(spy.calledOnce).to.be.true;
+
+        model.m$dom.remove();
+      });
+    });
+    describe('initDataBindings', function() {
+      describe('parseBindings', function() {
+        it('should return a list of triplet', function() {
+          var SmapleModel = Model.extend({
+            'defaults': {
+              'a': 'a',
+              'b': 'b',
+              'c': 'c'
+            },
+            'template': '\
+            <div data-bind="a => foo">\
+              <div data-bind="b => bar, c => baz"\
+            </div>'
+          });
+          var model = new SmapleModel();
+          var spy = sinon.spy(model, 'parseBindings');
+          model.render();
+          var bindings = spy.returnValues[0];
+          expect(bindings.length).to.equal(3);
+          expect(bindings[0].from).to.equal('a');
+          expect(bindings[0].to).to.equal('foo');
+          expect(bindings[2].from).to.equal('c');
+          expect(bindings[2].to).to.equal('baz');
+          model.m$dom.remove();
+        });
+      });
+    });
+    describe('initStates', function() {
+      it('should update the state by input. but ignore unrecognized ones', function() {
+        var SmapleModel = Model.extend({
+          'defaults': {
+            'txt': 'default text'
+          }
+        });
+        var model = new SmapleModel();
+        model.render({'txt': 'hi there!', 'foo': 'unexpected state'});
+        expect(model.mStates).to.not.have.ownProperty('foo');
+        expect(model.mStates.txt).to.equal('hi there!');
+        model.m$dom.remove();
+      });
+
+      it('model should ignore unrecognized initial state', function() {
+        // var SmapleModel = Model.extend({
+        //   'template': '<div class="sample-model"\
+        //     data-bind="txt => html">\
+        //     </div>'
+        // });
+        // var model = new SmapleModel({
+        //   'defaults': {
+        //     'txt': 'default text'
+        //   }
+        // });
+        // model.render({'txt': 'hi there!', 'foo': 'unexpected state'});
+        //
+        // model.m$dom.remove();
+      });
     });
   });
 });
