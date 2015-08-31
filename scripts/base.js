@@ -85,6 +85,7 @@
     },
     'defaults': {},
     'template': '<p>implement me</p>',
+    'handlers': {},
     'render': function(userInitPdo) {
       if (globals.Helper.isDefined(this.m$dom)) {
         return; // avoid duplicated rendering
@@ -408,8 +409,8 @@
         return function(item, idx) {
           item.change(name, !item.mStates[name]);
         };
-      } else if (Helper.isDefined(this.handlers, name)) {
-        return this.handlers[name];
+      } else if (Helper.isDefined(this.mController.handlers, name)) {
+        return this.mController.handlers[name];
       } else {
         console.error('getItemHandler: no corresponding handler for `%s`', name);
         return function() {};
