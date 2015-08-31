@@ -433,10 +433,55 @@
     }
   });
 
+  var Collection = Model.extend({
+    'init': function() {
+      var self = this;
+      this.Item = Model.extend({
+        'defaults': self.defaults,
+        'template': self.template,
+      });
+      this.mStates = []; // override type
+    },
+    'size': function() {
+      return this.mStates.length;
+    },
+    'add': function(pdo) {
+      // $elem <-$domParent- Collection <-controller- item Model
+      var model = new this.Item(this);
+      this.mStates.push(model);
+      model.render(pdo);
+      model.m$dom.attr('collection-item', '');
+    },
+    'get': function(idx, state) {
+      if (idx < 0 || this.size() <= idx) {
+        console.error('get: invalid idx: %d', idx);
+        return;
+      }
+      return this.mStates[idx].get(state);
+    },
+    'change': function(idx, state, value) {
+      if (idx < 0 || this.size() <= idx) {
+        console.error('get: invalid idx: %d', idx);
+        return;
+      }
+      return this.mStates[idx].change(state, value);
+    },
+    'remove': function(idx) {
+      if (idx < 0 || this.size() <= idx) {
+        console.error('get: invalid idx: %d', idx);
+        return;
+      }
+      var state = this.mStates.splice(idx, 1)[0];
+      state.m$dom.remove();
+      state = null;
+    },
+  });
+
   var exported = {
     'Helper': Helper,
     'Class': Class,
-    'Model': Model
+    'Model': Model,
+    'Collection': Collection
   };
   for (var k in exported) {
     globals[k] = exported[k];
