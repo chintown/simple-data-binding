@@ -428,7 +428,7 @@
         eventHandler = function(e) {
           var $target = $(e.target);
           var $needleDom = $target.parent('[collection-item]');
-          var $stackDom = self.mController.m$domParent;
+          var $stackDom = self.mController.m$domParent.find('[collection-item]');
           var idx = $stackDom.index($needleDom);
           var model = self.mController.mStates[idx];
           handler.call(self.mController, model, idx);
