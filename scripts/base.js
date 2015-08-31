@@ -183,7 +183,7 @@
     },
     'parseBindings': function(attr) {
       var elems = $.makeArray(this.m$dom.find('[' + attr + ']'));
-      if (this.m$dom.is('[' + attr + ']')) {
+      if (Helper.isDefined(this.m$dom.attr(attr))) {
         elems.unshift(this.m$dom.get(0));
       }
       var bindings = [];
