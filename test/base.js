@@ -264,4 +264,73 @@ describe('base.js', function() {
       });
     });
   });
+  describe('Colleciton', function() {
+    it('should render dom properly', function() {
+      var SampleCollection = Collection.extend({
+        'defaults': {
+          'txt': ''
+        },
+        'template': '<li data-bind="txt => html"></li>'
+      });
+      var SampleModule = Model.extend({
+        'defaults': {
+          'title': function() {
+            return 'got ' + this.get('listing').size() + ' listing items';
+          },
+          'listing': new SampleCollection()
+        },
+        'template': '\
+        <div class="sample-module">\
+          <div data-bind="title => html"></div>\
+          <ul data-bind="listing => inner" style="border: 1px solid black">\
+        </div>'
+      });
+
+      var model = new SampleModule();
+      model.render();
+      expect($('.sample-module').find('ul li').length).to.be.equal(0);
+      model.change('listing', function(collection) {
+        collection.add({txt: 'item1'});
+      });
+      expect($('.sample-module').find('ul li').length).to.be.equal(1);
+      expect($('.sample-module').find('ul li').html()).to.be.equal('item1');
+      model.change('listing', function(collection) {
+        collection.change(0, 'txt', 'item x');
+      });
+      expect($('.sample-module').find('ul li').html()).to.be.equal('item x');
+
+      model.m$dom.remove();
+    });
+    it('should bind event properly', function() {
+      var SampleCollection = Collection.extend({
+        'defaults': {
+          'isChecked': false,
+          'message': function() {
+            return this.get('isChecked') ? 'yes' : 'no';
+          }
+        },
+        'template': '<li>\
+          <div data-bind="message => txt"\
+               event-bind="click => isChecked"></div>\
+        </li>'
+      });
+      var SampleModule = Model.extend({
+        'defaults': {
+          'listing': new SampleCollection()
+        },
+        'template': '\
+        <div class="sample-module">\
+          <ul data-bind="listing => inner" style="border: 1px solid black">\
+        </div>'
+      });
+
+      var model = new SampleModule();
+      model.render();
+      model.change('listing', function(collection) {
+        collection.add({isChecked: true});
+        collection.add({isChecked: false});
+      });
+      model.m$dom.remove();
+    });
+  });
 });
