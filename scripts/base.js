@@ -389,7 +389,7 @@
       if (this.isSelfControlled()) {
         target = null;
       } else {
-        target = '[data-bind="' + $elem.attr('event-bind') + '"]';
+        target = '[event-bind="' + $elem.attr('event-bind') + '"]';
       }
       return target;
     },
@@ -423,7 +423,7 @@
           var $needleDom = $target.parent('[collection-item]');
           var $stackDom = self.mController.m$domParent;
           var idx = $stackDom.index($needleDom);
-          var model = self.mController.states[idx];
+          var model = self.mController.mStates[idx];
           handler.call(self.mController, model, idx);
         };
       }
