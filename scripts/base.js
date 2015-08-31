@@ -40,7 +40,7 @@
       },
       'publish': function(identifier, message) {
         if (!Helper.isDefined(bus, identifier)) {
-          console.error('subscribe: invalid identifier `%s`', identifier);
+          console.info('subscribe: no handler for `%s`', identifier);
           return;
         }
         for (var i = 0; i < bus[identifier].length; i++) {
@@ -87,10 +87,12 @@
       if (globals.Helper.isDefined(this.m$dom)) {
         return; // avoid duplicated rendering
       }
+      console.group('render');
       this.initView(); // bone
       this.initDataBindings(); // spirit
       this.initEventBindings(); // spirit
       this.initStates(userInitPdo); // flesh
+      console.groupEnd();
     },
     'initView': function() {
       var $container = this.mController.m$domParent || $('body');
@@ -114,9 +116,10 @@
         var domPoint = binding.to;
 
         // - on <model> + <state> change, trigger <dom> + <domPoint> updating
-        console.log('on `%s` change => update %o-%s', state, $elem, domPoint);
+        var identifier = self.getModelStateId(state);
+        console.log('on `%s` change => update %o-%s', identifier, $elem, domPoint);
         var viewUpdater = self.injectDomValue.bind(self, $elem, domPoint);
-        EventBus.subscribe(self.getModelStateId(state), viewUpdater);
+        EventBus.subscribe(identifier, viewUpdater);
 
         // - on <dom> change, trigger controller's <state> updating
         var stateUpdater = self.change.bind(self, state);
@@ -153,8 +156,9 @@
         var handlerName = binding.to;
 
         // - on controler <dom> <event>, tirgger <handler>
-        console.log('on %o-%s change => trigger %s',
-                    $elem, eventName, handlerName);
+        console.log('on %o-%s => trigger %s %s',
+                    $elem, eventName, handlerName,
+                    (self.isSelfControlled() ? '' : '(bubbled)'));
         var watcher = self.getEventWatcher($elem);
         var target = self.getEventTarget($elem);
         var handler = self.getEventHandler(handlerName);
