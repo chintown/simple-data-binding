@@ -24,6 +24,15 @@ describe('base.js', function() {
     });
   });
   describe('Model', function() {
+    it('should give new instance an uniq id', function() {
+      var SmapleModel = Model.extend({});
+      var m1 = new SmapleModel();
+      var m2 = new SmapleModel();
+      var m3 = new SmapleModel();
+      expect(m1.mId).to.equal(1);
+      expect(m2.mId).to.equal(2);
+      expect(m3.mId).to.equal(3);
+    });
     describe('initView', function() {
       it('should render dom in body by default', function() {
         var SmapleModel = Model.extend({
