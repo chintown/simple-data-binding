@@ -77,6 +77,8 @@
       this.m$dom = null;
       this.m$domParent = null;
       this.mStates = $.extend({}, this.defaults);
+      this.isEventBingidngDone = false;
+      this.isLoopDetectingDone = false;
     },
     'isSelfControlled': function() {
       return this.mController == this;
@@ -144,6 +146,12 @@
       //   var idx, model <- e
       //   fn.call(context, model, idx)
       // }
+
+      if (this.mController.isEventBingidngDone) {
+        return;
+      } else {
+        this.mController.isEventBingidngDone = true;
+      }
 
       if (!Helper.isDefined(this.m$dom)) {
         console.error('initDataBindings: m$dom is not ready.');
@@ -329,6 +337,13 @@
       // c get a
       //   get b <= cause loop
       var isValidWithoutLoop = true;
+
+      if (this.mController.isLoopDetectingDone) {
+        return isValidWithoutLoop;
+      } else {
+        this.mController.isLoopDetectingDone = true;
+      }
+
       var self = this;
       var stateDepMap = this.stateDepMap;
       $.each(this.mStates, function(consumer, valOrFn) {
