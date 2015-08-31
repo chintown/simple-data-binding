@@ -307,14 +307,23 @@ describe('base.js', function() {
           'isChecked': false,
           'message': function() {
             return this.get('isChecked') ? 'yes' : 'no';
-          }
+          },
+          'log': ''
         },
         'template': '<li>\
           <div data-bind="message => txt"\
-               event-bind="click => isChecked"></div>\
-        </li>'
+               event-bind="click => isChecked,\
+               mouseenter => logMe"\
+               "></div>\
+          <span class="log" data-bind="log => html"></span>\
+        </li>',
+        handlers: {
+          'logMe': function(item, idx) {
+            item.change('log', 'mouse enter model id: ' + item.mId);
+          }
+        }
       });
-      var SampleModule = Model.extend({
+      var SampleModule2 = Model.extend({
         'defaults': {
           'listing': new SampleCollection()
         },
@@ -324,12 +333,15 @@ describe('base.js', function() {
         </div>'
       });
 
-      var model = new SampleModule();
+      var model = new SampleModule2();
       model.render();
       model.change('listing', function(collection) {
         collection.add({isChecked: true});
         collection.add({isChecked: false});
       });
+      $('.sample-module li:first-child>div').trigger('mouseenter');
+      var log = $('.sample-module li:first-child').find('.log').text();
+      expect(log).to.equal('mouse enter model id: 2');
       model.m$dom.remove();
     });
   });
