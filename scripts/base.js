@@ -117,6 +117,11 @@
         var state = binding.from;
         var domPoint = binding.to;
 
+        if (domPoint === 'inner') {
+          // $elem <-$domParent- Collection <-controller- item Model
+          self.get(state).render($elem);
+        }
+
         // - on <model> + <state> change, trigger <dom> + <domPoint> updating
         var identifier = self.getModelStateId(state);
         console.log('on `%s` change => update %o-%s', identifier, $elem, domPoint);
@@ -441,6 +446,15 @@
         'template': self.template,
       });
       this.mStates = []; // override type
+    },
+    'render': function(m$domParent) {
+      this.m$domParent = m$domParent; // bone
+      // spirit
+      // module Model [view] <-$domParent\
+      //                                  Collection
+      // item Model          <-controller/
+      this.add({});
+      this.remove(0);
     },
     'size': function() {
       return this.mStates.length;
