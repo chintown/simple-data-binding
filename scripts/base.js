@@ -15,6 +15,16 @@
         } else {
           console.error('isDefined: unsupported args: %o', args);
         }
+      },
+      'makeArray': function() {
+        var args = [].slice.call(arguments);
+        var arr = [];
+        $.each(args, function(idx, arg) {
+          if (arg) {
+            arr.push(arg);
+          }
+        });
+        return arr;
       }
     };
   })();
@@ -68,6 +78,9 @@
       this.m$domParent = null;
       this.mStates = $.extend({}, this.defaults);
     },
+    'isSelfControlled': function() {
+      return this.mController == this;
+    },
     'defaults': {},
     'template': '<p>implement me</p>',
     'render': function(userInitPdo) {
@@ -76,6 +89,7 @@
       }
       this.initView(); // bone
       this.initDataBindings(); // spirit
+      this.initEventBindings(); // spirit
       this.initStates(userInitPdo); // flesh
     },
     'initView': function() {
@@ -115,6 +129,36 @@
             stateUpdater(value);
           });
         }
+      });
+    },
+    'initEventBindings': function() {
+      // event-bind="<event> => <handler> | boolean <state>"
+      // - on controler <dom> <event>, tirgger <handler>
+      //
+      // position in collection: stack.index(needle)
+      // model in collection: collection.mStates[idx]
+      // function(e) {
+      //   var idx, model <- e
+      //   fn.call(context, model, idx)
+      // }
+
+      if (!Helper.isDefined(this.m$dom)) {
+        console.error('initDataBindings: m$dom is not ready.');
+        return;
+      }
+      var self = this;
+      $.each(this.parseBindings('event-bind'), function(idx, binding) {
+        var $elem = binding.$elem;
+        var eventName = binding.from;
+        var handlerName = binding.to;
+
+        // - on controler <dom> <event>, tirgger <handler>
+        console.log('on %o-%s change => trigger %s',
+                    $elem, eventName, handlerName);
+        var watcher = self.getEventWatcher($elem);
+        var target = self.getEventTarget($elem);
+        var handler = self.getEventHandler(handlerName);
+        watcher.on.apply(watcher, Helper.makeArray(eventName, target, handler));
       });
     },
     'initStates': function(userInitPdo) {
@@ -311,6 +355,60 @@
       } else {
         return this.stateDepMap[state];
       }
+    },
+    'getEventWatcher': function($elem) {
+      var watcher;
+      if (this.isSelfControlled()) {
+        watcher = $elem;
+      } else {
+        watcher = this.mController.m$domParent;
+      }
+      return watcher;
+    },
+    'getEventTarget': function($elem) {
+      var target;
+      if (this.isSelfControlled()) {
+        target = null;
+      } else {
+        target = '[data-bind="' + $elem.attr('event-bind') + '"]';
+      }
+      return target;
+    },
+    'getHandler': function(name) { // need context to be `this`
+      // TODO handle click => !isEdit
+      if (Helper.isDefined(this.mStates, name) &&
+          typeof this.mStates[name] == 'boolean') {
+        return function() {
+          this.change(name, !this.mStates[name]);
+        };
+      } else if (Helper.isDefined(this.handlers, name)) {
+        return this.handlers[name];
+      } else {
+        console.error('getItemHandler: no corresponding handler for `%s`', name);
+        return function() {};
+      }
+    },
+    'getEventHandler': function(name) {
+      var self = this;
+      var handler = this.getHandler(name);
+      var eventHandler;
+      if (this.isSelfControlled()) {
+        eventHandler = function(e) {
+          var idx = -1;
+          var model = self;
+          handler.call(self.mController, model, idx);
+        };
+      } else {
+        eventHandler = function(e) {
+          var $target = $(e.target);
+          var $needleDom = $target.parent('[collection-item]');
+          var $stackDom = self.mController.m$domParent;
+          var idx = $stackDom.index($needleDom);
+          var model = self.mController.states[idx];
+          handler.call(self.mController, model, idx);
+        };
+      }
+      return eventHandler;
     }
   });
 

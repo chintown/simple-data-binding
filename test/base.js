@@ -141,6 +141,60 @@ describe('base.js', function() {
         model.m$dom.remove();
       });
     });
+    describe('initEventBindings', function() {
+      it('should call handler with target model if control-UI event triggered',
+      function() {
+        var SmapleModel = Model.extend({
+          'defaults': {
+            'a': '1',
+            'b': '2',
+            'c': '3',
+            'log': 'init'
+          },
+          'template': '\
+          <div id="a" event-bind="mouseenter => logA"\
+            style="border: 1px solid black">\
+            <div id="b" data-bind="b => html" event-bind="click => logB"></div>\
+            <input id="c" data-bind="c => val" event-bind="blur => logC">\
+            <div id="log" data-bind="log => txt"></div>\
+          </div>',
+          handlers: {
+            'logA': function(model) { this.change('log', 'A'); },
+            'logB': function(model) { this.change('log', model.get('b')); },
+            'logC': function(model) { this.change('log', 'C'); },
+          }
+        });
+        var model = new SmapleModel();
+        model.render();
+        $('#a').trigger('mouseenter');
+        expect($('#log').text()).to.equal('A');
+        $('#b').trigger('click');
+        expect($('#log').text()).to.equal('2');
+        $('#c').trigger('blur');
+        expect($('#log').text()).to.equal('C');
+        model.m$dom.remove();
+      });
+    });
+    describe('initEventBindings', function() {
+      it('should toggle state if handler matches with a state name',
+      function() {
+        var SmapleModel = Model.extend({
+          'defaults': {
+            'a': true
+          },
+          'template': '\
+          <div>\
+            <div id="a" event-bind="click => a">x</div>\
+            <div id="log" data-bind="a => txt"></div>\
+          </div>'
+        });
+        var model = new SmapleModel();
+        model.render();
+        $('#a').trigger('click');
+        expect($('#log').text()).to.equal('false');
+        model.m$dom.remove();
+      });
+    });
     describe('initStates', function() {
       it('should update the state by input. but ignore unrecognized ones', function() {
         var SmapleModel = Model.extend({
