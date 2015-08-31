@@ -394,11 +394,12 @@
       return target;
     },
     'getHandler': function(name) { // need context to be `this`
+      // INTERFACE: corresponding <item> and its <index> in collection
       // TODO handle click => !isEdit
       if (Helper.isDefined(this.mStates, name) &&
           typeof this.mStates[name] == 'boolean') {
-        return function() {
-          this.change(name, !this.mStates[name]);
+        return function(item, idx) {
+          item.change(name, !item.mStates[name]);
         };
       } else if (Helper.isDefined(this.handlers, name)) {
         return this.handlers[name];
@@ -408,6 +409,7 @@
       }
     },
     'getEventHandler': function(name) {
+      // INTERFACE: dom <event>
       var self = this;
       var handler = this.getHandler(name);
       var eventHandler;
