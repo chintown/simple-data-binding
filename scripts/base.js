@@ -196,15 +196,17 @@
       if (!Helper.isDefined(this.mStates, state)) {
         console.error('change: model does not have state: %s', state);
         return;
-      } else if (typeof value == 'function') {
-        console.error('change: can not state by function value. %s:=%s', state, value);
-        return;
       }
 
       var self = this;
       console.group('change: %s=`%s`', state, value);
-      this.set(state, value);
-      EventBus.publish(this.getModelStateId(state), value);
+      if (this.get(state) instanceof Collection &&
+          typeof value == 'function') {
+        value.call(this, this.get(state));
+      } else {
+        this.set(state, value);
+        EventBus.publish(this.getModelStateId(state), value);
+      }
 
       $.each(this.getStateDeps(state), function(idx, stateDep) {
         var value = self.get(stateDep);
