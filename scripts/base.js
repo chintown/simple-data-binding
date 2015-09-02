@@ -245,6 +245,14 @@
     'getModelStateId': function(state) {
       return this.mId + '-' + state;
     },
+    'parseLeadDecoration': function(decoration, decoratedName) {
+      var matches = (new RegExp('^(' + decoration + ")?(\\w+)$"))
+                    .exec(decoratedName);
+      return {
+        'hasDecoration': Helper.isDefined(matches[1]),
+        'cleanedName': matches[2]
+      }
+    },
     'parseBindings': function(attr) {
       var elems = $.makeArray(this.m$dom.find('[' + attr + ']'));
       if (Helper.isDefined(this.m$dom.attr(attr))) {
@@ -291,6 +299,11 @@
         }
       } else {
         if (typeof stateVal == 'boolean') {
+          var nameObj = this.parseLeadDecoration('!', domPoint);
+          var shouldReverse = nameObj.hasDecoration;
+          domPoint = nameObj.cleanedName;
+          stateVal = shouldReverse ? !stateVal : stateVal;
+
           if (stateVal) {
             $dom.attr(domPoint, true);
           } else {
@@ -403,11 +416,15 @@
     },
     'getHandler': function(name) { // need context to be `this`
       // INTERFACE: corresponding <item> and its <index> in collection
-      // TODO handle click => !isEdit
+      var nameObj = this.parseLeadDecoration('!', name);
+      var shouldReverse = nameObj.hasDecoration;
+      name = nameObj.cleanedName;
       if (Helper.isDefined(this.mStates, name) &&
           typeof this.mStates[name] == 'boolean') {
         return function(item, idx) {
-          item.change(name, !item.mStates[name]);
+          var toggled = shouldReverse ?
+                        item.mStates[name] : !item.mStates[name];
+          item.change(name, toggled);
         };
       } else if (Helper.isDefined(this.mController.handlers, name)) {
         return this.mController.handlers[name];
