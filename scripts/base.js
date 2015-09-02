@@ -270,11 +270,11 @@
     },
     'injectDomValue': function($dom, domPoint, stateVal) {
       // domPoint
-      // html, txt | val | class--classname | others(attr)
+      // html, text | val | class--classname | others(attr)
       // TODO ignore if no change
       if (domPoint == 'html') {
         $dom.html(stateVal);
-      } else if (domPoint == 'txt') {
+      } else if (domPoint == 'text') {
         $dom.text(stateVal);
       } else if (domPoint == 'val') {
         $dom.val(stateVal);

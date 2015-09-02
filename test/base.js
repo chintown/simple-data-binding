@@ -97,7 +97,7 @@ describe('base.js', function() {
           'template': '\
           <div class="model-1">\
             <div class="elem-1" data-bind="s1=>html"></div>\
-            <div class="elem-2" data-bind="s2=>txt"></div>\
+            <div class="elem-2" data-bind="s2=>text"></div>\
             <input class="elem-3" data-bind="s5=>val">\
             <div class="elem-4" data-bind="s3=>class--foo"></div>\
             <div class="elem-5 foo" data-bind="s4=>class--foo"></div>\
@@ -165,7 +165,7 @@ describe('base.js', function() {
             style="border: 1px solid black">\
             <div id="b" data-bind="b => html" event-bind="click => logB"></div>\
             <input id="c" data-bind="c => val" event-bind="blur => logC">\
-            <div id="log" data-bind="log => txt"></div>\
+            <div id="log" data-bind="log => text"></div>\
           </div>',
           handlers: {
             'logA': function(model) { this.change('log', 'A'); },
@@ -194,7 +194,7 @@ describe('base.js', function() {
           'template': '\
           <div>\
             <div id="a" event-bind="click => a">x</div>\
-            <div id="log" data-bind="a => txt"></div>\
+            <div id="log" data-bind="a => text"></div>\
           </div>'
         });
         var model = new SmapleModel();
@@ -230,7 +230,7 @@ describe('base.js', function() {
           'template': '\
             <div class="module">\
               message: <input class="user-input" data-bind="msg=>val">\
-              message length:<span class="message" data-bind="len=>txt"></span>\
+              message length:<span class="message" data-bind="len=>text"></span>\
             </div>\
           '
         });
@@ -311,7 +311,7 @@ describe('base.js', function() {
           'log': ''
         },
         'template': '<li>\
-          <div data-bind="message => txt"\
+          <div data-bind="message => text"\
                event-bind="click => isChecked,\
                mouseenter => logMe"\
                "></div>\
