@@ -73,7 +73,7 @@
     'factoryId': 0,
     'init': function(controller) {
       this.mId = ++this.__proto__.factoryId;
-      this.mController = controller || this; // logic might be held by delegator
+      this.mController = controller || this; // logic might be held by upstream
       this.m$dom = null;
       this.m$domParent = null;
       this.mStates = $.extend({}, this.defaults);
@@ -145,14 +145,6 @@
     'initEventBindings': function() {
       // event-bind="<event> => <handler> | boolean <state>"
       // - on controler <dom> <event>, tirgger <handler>
-      //
-      // position in collection: stack.index(needle)
-      // model in collection: collection.mStates[idx]
-      // function(e) {
-      //   var idx, model <- e
-      //   fn.call(context, model, idx)
-      // }
-
       if (this.mController.isEventBingidngDone) {
         return;
       } else {
@@ -251,7 +243,7 @@
       return {
         'hasDecoration': Helper.isDefined(matches[1]),
         'cleanedName': matches[2]
-      }
+      };
     },
     'parseBindings': function(attr) {
       var elems = $.makeArray(this.m$dom.find('[' + attr + ']'));
@@ -277,8 +269,7 @@
       return bindings;
     },
     'injectDomValue': function($dom, domPoint, stateVal) {
-      // domPoint
-      // html, text | val | class--classname | others(attr)
+      // domPoint := html, text | val | class--classname | others(attr)
       // TODO ignore if no change
       if (domPoint == 'html') {
         $dom.html(stateVal);
@@ -414,7 +405,7 @@
       }
       return target;
     },
-    'getHandler': function(name) { // need context to be `this`
+    'getHandler': function(name) { // caller should bind this on it
       // INTERFACE: corresponding <item> and its <index> in collection
       var nameObj = this.parseLeadDecoration('!', name);
       var shouldReverse = nameObj.hasDecoration;
@@ -427,10 +418,10 @@
           item.change(name, toggled);
         };
       } else if (Helper.isDefined(this.mController.handlers, name)) {
-        return this.mController.handlers[name];
+        return this.mController.handlers[name]; // (item, idx)
       } else {
         console.error('getItemHandler: no corresponding handler for `%s`', name);
-        return function() {};
+        return function(item, idx) {};
       }
     },
     'getEventHandler': function(name) {
@@ -465,14 +456,14 @@
         'defaults': self.defaults,
         'template': self.template,
       });
-      this.mStates = []; // override type
+      this.mStates = []; // override from object
     },
     'render': function(m$domParent) {
       this.m$domParent = m$domParent; // bone
       // spirit
       // module Model [view] <-$domParent\
       //                                  Collection
-      // item Model          <-controller/
+      // item Model          controller->/
       this.add({});
       this.remove(0);
     },
