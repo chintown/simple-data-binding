@@ -332,14 +332,16 @@
     },
     'ptnGetter': /\.get\(['"]([a-zA-Z]+)['"]\)/gm,
     'getGetterDeps': function(fn) {
-      var matches = this.ptnGetter.exec(fn);
+      var deps = [];
+      var matches = null;
       this.ptnGetter.lastIndex = 0;
-      if (!matches) {
-        return [];
-      } else {
-        matches.shift();
-        return matches;
+      while ((matches = this.ptnGetter.exec(fn))) {
+        var dep = matches[1];
+        if (deps.indexOf(dep) === -1) {
+          deps.push(dep);
+        }
       }
+      return deps;
     },
     'stateDepMap': {},
     'initStateDeps': function() {
