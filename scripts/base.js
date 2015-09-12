@@ -204,7 +204,7 @@
       $.each(this.getStateDeps(state), function(idx, stateDep) {
         var value = self.get(stateDep);
         console.group('-> change: %s=`%s`', stateDep, value);
-        EventBus.publish(self.getModelStateId(stateDep), value);
+        self.change(stateDep, value);
         console.groupEnd();
       });
       console.groupEnd();
