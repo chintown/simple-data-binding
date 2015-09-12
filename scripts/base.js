@@ -72,7 +72,7 @@
   var Model = Class.extend({
     'factoryId': 0,
     'init': function(controller) {
-      this.mId = ++this.__proto__.factoryId;
+      this.mId = ++Model.prototype.factoryId;
       this.mController = controller || this; // logic might be held by upstream
       this.m$dom = null;
       this.m$domParent = null;
