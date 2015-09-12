@@ -71,12 +71,20 @@
 
   var Model = Class.extend({
     'factoryId': 0,
+    'isFactory': function(fn) {
+      return /return new /.test(fn.toString().trim());
+    },
     'init': function(controller) {
       this.mId = ++Model.prototype.factoryId;
       this.mController = controller || this; // logic might be held by upstream
       this.m$dom = null;
       this.m$domParent = null;
-      this.mStates = $.extend({}, this.defaults);
+      this.mStates = $.extend(true, {}, this.defaults); // deep clone to avoid shared states object
+      for (var k in this.mStates) {
+        if (this.isFactory(this.mStates[k])) {
+          this.mStates[k] = new this.mStates[k]();
+        }
+      }
       this.isEventBingidngDone = false;
       this.isLoopDetectingDone = false;
     },
