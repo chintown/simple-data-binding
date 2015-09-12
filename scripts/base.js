@@ -70,12 +70,12 @@
   })();
 
   var Model = Class.extend({
-    'factoryId': 0,
+    'serialId': 0,
     'isFactory': function(fn) {
       return /return new /.test(fn.toString().trim());
     },
     'init': function(controller) {
-      this.mId = ++Model.prototype.factoryId;
+      this.mId = ++Model.prototype.serialId;
       this.mController = controller || this; // logic might be held by upstream
       this.m$dom = null;
       this.m$domParent = null;
