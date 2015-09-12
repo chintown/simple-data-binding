@@ -500,6 +500,17 @@
       state.m$dom.remove();
       state = null;
     },
+    'addAll': function(pdoList) {
+      var self = this;
+      $.each(pdoList, function(idx, pdo) {
+        self.add(pdo);
+      });
+    },
+    'removeAll': function() {
+      for (var i = this.size() - 1; i >= 0; i--) {
+        this.remove(i);
+      }
+    }
   });
 
   var exported = {
