@@ -466,8 +466,6 @@
       // module Model [view] <-$domParent\
       //                                  Collection
       // item Model          controller->/
-      this.add({});
-      this.remove(0);
     },
     'size': function() {
       return this.mStates.length;
